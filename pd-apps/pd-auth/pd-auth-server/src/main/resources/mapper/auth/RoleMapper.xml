@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pd.auth.mapper.auth.RoleMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.pd.auth.entity.auth.Role">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="create_user" jdbcType="BIGINT" property="createUser"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_user" jdbcType="BIGINT" property="updateUser"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="describe_" jdbcType="VARCHAR" property="describe"/>
+        <result column="status" jdbcType="BIT" property="status"/>
+        <result column="readonly" jdbcType="BIT" property="readonly"/>
+        <!--<result column="ds_type" jdbcType="VARCHAR" property="dsType"/>-->
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, create_user, create_time, update_user, update_time,
+        name, code, describe_, status, readonly
+    </sql>
+
+    <!-- 通用查询结果列 -->
+    <sql id="R_Column_List">
+        r.id,  r.name, r.code, r.describe_, r.status, r.readonly
+    </sql>
+
+    <select id="findRoleByUserId" parameterType="map" resultMap="BaseResultMap">
+        select
+        <include refid="R_Column_List"/>
+        from pd_auth_role r inner join pd_auth_user_role ur on r.id = ur.role_id
+        where status = true and ur.user_id = #{userId, jdbcType=BIGINT}
+    </select>
+
+    <select id="findUserIdByCode" parameterType="map" resultType="java.lang.Long">
+        select ur.user_id from pd_auth_user_role ur inner join pd_auth_role r on r.id = ur.role_id
+        where r.status = true
+        and r.`code` in
+        <foreach close=")" collection="codes" item="code" open="(" separator=",">
+            #{code}
+        </foreach>
+    </select>
+
+</mapper>

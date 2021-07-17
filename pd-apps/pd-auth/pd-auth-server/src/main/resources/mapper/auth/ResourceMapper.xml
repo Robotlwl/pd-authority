@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pd.auth.mapper.auth.ResourceMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.pd.auth.entity.auth.Resource">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="create_user" jdbcType="BIGINT" property="createUser"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_user" jdbcType="BIGINT" property="updateUser"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="menu_id" jdbcType="BIGINT" property="menuId"/>
+        <result column="describe_" jdbcType="VARCHAR" property="describe"/>
+        <result column="method" jdbcType="VARCHAR" property="method"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, create_user, create_time, update_user, update_time,
+        code, name, menu_id, describe_,method,url
+    </sql>
+
+    <select id="findVisibleResource" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from pd_auth_resource where 1=1
+            and id in (
+                select authority_id from pd_auth_role_authority ra
+                    inner join pd_auth_user_role ur on ra.role_id = ur.role_id
+                    inner join pd_auth_role r on r.id = ra.role_id
+                where ur.user_id = #{userId, jdbcType=BIGINT}
+                    and r.`status` = true
+                    and ra.authority_type = 'RESOURCE'
+            )
+    </select>
+
+    <select id="findMenuIdByResourceId" parameterType="map" resultType="java.lang.Long">
+        select distinct menu_id from pd_auth_resource where id in
+        <foreach close=")" collection="resourceIdList" item="id" open="(" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>
